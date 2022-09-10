@@ -20,3 +20,9 @@ Invoke-WebRequest -Uri https://download.visualstudio.microsoft.com/download/pr/6
 Start-Process -FilePath ./dotnet-hosting-3.0.1-win.exe -Wait -ArgumentList /passive
 net stop was /y
 net start w3svc
+
+
+$license=$args[0]
+New-Item -Path "C:\JL Media" -ItemType Directory
+New-Item "C:\JL Media\License.txt"
+Set-Content "C:\JL Media\License.txt" $license
