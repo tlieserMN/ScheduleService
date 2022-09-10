@@ -12,3 +12,11 @@ Do {
 		rm "$LocalTempDir\$ChromeInstaller" -ErrorAction SilentlyContinue -Verbose 
 	} 
 } Until (!$ProcessesFound)
+
+
+
+
+Invoke-WebRequest -Uri https://download.visualstudio.microsoft.com/download/pr/6deb2f82-9fe4-4453-a30a-ef4b780ad3d6/9f90355e0576949a5d605aae01376f65/dotnet-hosting-3.1.28-win.exe -OutFile dotnet-hosting-3.0.1-win.exe
+Start-Process -FilePath ./dotnet-hosting-3.0.1-win.exe -Wait -ArgumentList /passive
+net stop was /y
+net start w3svc
