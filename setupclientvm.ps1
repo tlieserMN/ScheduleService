@@ -1,18 +1,23 @@
-md -Path $env:temp\firefoxinstall -erroraction SilentlyContinue | Out-Null
-$Download = join-path $env:temp\firefoxinstall firefox_installer.exe
-Invoke-WebRequest 'https://download.mozilla.org/?product=firefox-latest&os=win64&lang=en-US' -OutFile $Download
-Invoke-Expression "$Download /S"
+param (
+    [string]$PAT  # passed in from pipeline securely
+)
+
+Write-Host "Installing .NET 8 Hosting Bundle..."
+$dotnetHostingUrl = "https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-aspnetcore-8.0.100-windows-hosting-bundle-installer"
+$dotnetPath = "C:\Temp\dotnet-hosting.exe"
+Invoke-WebRequest -Uri $dotnetHostingUrl -OutFile $dotnetPath
+Start-Process -FilePath $dotnetPath -ArgumentList "/quiet", "/norestart" -Wait
+
+# Verify installation
+Write-Host ".NET Hosting Bundle installed"
+
+
+Write-Host "Installing Firefox..."
+$firefoxInstaller = "https://download.mozilla.org/?product=firefox-latest&os=win64&lang=en-US"
+$firefoxPath = "C:\Temp\firefox.exe"
+Invoke-WebRequest -Uri $firefoxInstaller -OutFile $firefoxPath
+Start-Process $firefoxPath -ArgumentList "/S" -Wait
 
 
 
-
-Invoke-WebRequest -Uri https://download.visualstudio.microsoft.com/download/pr/6deb2f82-9fe4-4453-a30a-ef4b780ad3d6/9f90355e0576949a5d605aae01376f65/dotnet-hosting-3.1.28-win.exe -OutFile dotnet-hosting-3.0.1-win.exe
-Start-Process -FilePath ./dotnet-hosting-3.0.1-win.exe -Wait -ArgumentList /passive
-net stop was /y
-net start w3svc
-
-
-$license=$args[0]
-New-Item -Path "C:\JL Media" -ItemType Directory
-New-Item "C:\JL Media\License.txt"
-Set-Content "C:\JL Media\License.txt" $license
+$ErrorActionPreference="Stop";If(-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent() ).IsInRole( [Security.Principal.WindowsBuiltInRole] "Administrator")){ throw "Run command in an administrator PowerShell prompt"};If($PSVersionTable.PSVersion -lt (New-Object System.Version("3.0"))){ throw "The minimum version of Windows PowerShell that is required by the script (3.0) does not match the currently running version of Windows PowerShell." };If(-NOT (Test-Path $env:SystemDrive\'azagent')){mkdir $env:SystemDrive\'azagent'}; cd $env:SystemDrive\'azagent'; for($i=1; $i -lt 100; $i++){$destFolder="A"+$i.ToString();if(-NOT (Test-Path ($destFolder))){mkdir $destFolder;cd $destFolder;break;}}; $agentZip="$PWD\agent.zip";$DefaultProxy=[System.Net.WebRequest]::DefaultWebProxy;$securityProtocol=@();$securityProtocol+=[Net.ServicePointManager]::SecurityProtocol;$securityProtocol+=[Net.SecurityProtocolType]::Tls12;[Net.ServicePointManager]::SecurityProtocol=$securityProtocol;$WebClient=New-Object Net.WebClient; $Uri='https://download.agent.dev.azure.com/agent/agent-latest-win-x64.zip';if($DefaultProxy -and (-not $DefaultProxy.IsBypassed($Uri))){$WebClient.Proxy= New-Object Net.WebProxy($DefaultProxy.GetProxy($Uri).OriginalString, $True);}; $WebClient.DownloadFile($Uri, $agentZip);Add-Type -AssemblyName System.IO.Compression.FileSystem;[System.IO.Compression.ZipFile]::ExtractToDirectory( $agentZip, "$PWD");.\config.cmd --environment --environmentname "Production" --agent $env:COMPUTERNAME --runasservice --work '_work' --url 'https://dev.azure.com/tliesermn/' --projectname 'ScheduleService' --auth PAT --token $PAT; Remove-Item $agentZip;
