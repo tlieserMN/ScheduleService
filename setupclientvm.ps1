@@ -2,8 +2,13 @@ param (
     [string]$PAT  # passed in from pipeline securely
 )
 
+if (-Not (Test-Path -Path "C:\Temp")) {
+    Write-Host "Creating C:\Temp"
+    New-Item -Path "C:\Temp" -ItemType Directory | Out-Null
+}
+
 Write-Host "Installing .NET 8 Hosting Bundle..."
-$dotnetHostingUrl = "https://dotnet.microsoft.com/download/dotnet/thank-you/runtime-aspnetcore-8.0.100-windows-hosting-bundle-installer"
+$dotnetHostingUrl = "https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/8.0.22/dotnet-hosting-8.0.22-win.exe"
 $dotnetPath = "C:\Temp\dotnet-hosting.exe"
 Invoke-WebRequest -Uri $dotnetHostingUrl -OutFile $dotnetPath
 Start-Process -FilePath $dotnetPath -ArgumentList "/quiet", "/norestart" -Wait
