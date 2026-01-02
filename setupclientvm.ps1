@@ -3,14 +3,15 @@ if (-Not (Test-Path -Path "C:\Temp")) {
     New-Item -Path "C:\Temp" -ItemType Directory | Out-Null
 }
 
-Write-Host "Installing .NET 8 Hosting Bundle..."
-$dotnetHostingUrl = "https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/8.0.22/dotnet-hosting-8.0.22-win.exe"
-$dotnetPath = "C:\Temp\dotnet-hosting.exe"
-Invoke-WebRequest -Uri $dotnetHostingUrl -OutFile $dotnetPath
-Start-Process -FilePath $dotnetPath -ArgumentList "/quiet", "/norestart" -Wait
+# if self contained app, don't need .net installed
+#Write-Host "Installing .NET 8 Hosting Bundle..."
+#$dotnetHostingUrl = "https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/8.0.22/dotnet-hosting-8.0.22-win.exe"
+#$dotnetPath = "C:\Temp\dotnet-hosting.exe"
+#Invoke-WebRequest -Uri $dotnetHostingUrl -OutFile $dotnetPath
+#Start-Process -FilePath $dotnetPath -ArgumentList "/quiet", "/norestart" -Wait
 
 # Verify installation
-Write-Host ".NET Hosting Bundle installed"
+#Write-Host ".NET Hosting Bundle installed"
 
 
 Write-Host "Installing Firefox..."
