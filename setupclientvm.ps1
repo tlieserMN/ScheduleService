@@ -23,3 +23,23 @@ Start-Process $firefoxPath -ArgumentList "/S" -Wait
 
 $PAT=$args[0]
 $ErrorActionPreference="Stop";If(-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent() ).IsInRole( [Security.Principal.WindowsBuiltInRole] "Administrator")){ throw "Run command in an administrator PowerShell prompt"};If($PSVersionTable.PSVersion -lt (New-Object System.Version("3.0"))){ throw "The minimum version of Windows PowerShell that is required by the script (3.0) does not match the currently running version of Windows PowerShell." };If(-NOT (Test-Path $env:SystemDrive\'azagent')){mkdir $env:SystemDrive\'azagent'}; cd $env:SystemDrive\'azagent'; for($i=1; $i -lt 100; $i++){$destFolder="A"+$i.ToString();if(-NOT (Test-Path ($destFolder))){mkdir $destFolder;cd $destFolder;break;}}; $agentZip="$PWD\agent.zip";$DefaultProxy=[System.Net.WebRequest]::DefaultWebProxy;$securityProtocol=@();$securityProtocol+=[Net.ServicePointManager]::SecurityProtocol;$securityProtocol+=[Net.SecurityProtocolType]::Tls12;[Net.ServicePointManager]::SecurityProtocol=$securityProtocol;$WebClient=New-Object Net.WebClient; $Uri='https://download.agent.dev.azure.com/agent/4.266.2/vsts-agent-win-x64-4.266.2.zip';if($DefaultProxy -and (-not $DefaultProxy.IsBypassed($Uri))){$WebClient.Proxy= New-Object Net.WebProxy($DefaultProxy.GetProxy($Uri).OriginalString, $True);}; $WebClient.DownloadFile($Uri, $agentZip);Add-Type -AssemblyName System.IO.Compression.FileSystem;[System.IO.Compression.ZipFile]::ExtractToDirectory( $agentZip, "$PWD");.\config.cmd --environment --environmentname "Production" --agent $env:COMPUTERNAME --unattended --acceptteeeula --runasservice --work '_work' --url 'https://dev.azure.com/tliesermn/' --projectname 'ScheduleService' --auth PAT --token $PAT; Remove-Item $agentZip;
+
+
+
+# Replace with your user
+$user = $args[1]
+
+Write-Host "Granting 'Log on as a service' to $user..."
+
+# Grant the right using secedit
+secedit /export /cfg C:\Windows\Temp\secpol.cfg
+$content = Get-Content C:\Windows\Temp\secpol.cfg
+
+if ($content -notmatch [regex]::Escape($user)) {
+    $content = $content -replace 'SeServiceLogonRight = (.*)', "SeServiceLogonRight = `$1,$user"
+    $content | Set-Content C:\Windows\Temp\secpol.cfg
+    secedit /configure /db secedit.sdb /cfg C:\Windows\Temp\secpol.cfg /areas USER_RIGHTS
+    Write-Host "'Log on as a service' granted."
+} else {
+    Write-Host "$user already has the right."
+}
