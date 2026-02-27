@@ -14,11 +14,11 @@ if (-Not (Test-Path -Path "C:\Temp")) {
 #Write-Host ".NET Hosting Bundle installed"
 
 
-Write-Host "Installing Firefox..."
-$firefoxInstaller = "https://download.mozilla.org/?product=firefox-latest&os=win64&lang=en-US"
-$firefoxPath = "C:\Temp\firefox.exe"
-Invoke-WebRequest -Uri $firefoxInstaller -OutFile $firefoxPath
-Start-Process $firefoxPath -ArgumentList "/S" -Wait
+Write-Host "Installing Firefox with Auto-Update Enabled..."
+$firefoxMsi = "https://download.mozilla.org/?product=firefox-msi-latest-ssl&os=win64&lang=en-US"
+$firefoxPath = "C:\Temp\firefox.msi"
+Invoke-WebRequest -Uri $firefoxMsi -OutFile $firefoxPath
+Start-Process "msiexec.exe" -ArgumentList "/i `"$firefoxPath`" /qn MAINTENANCESERVICE=true" -Wait
 
 
 $PAT=$args[0]
